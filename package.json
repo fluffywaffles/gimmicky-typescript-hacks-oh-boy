@@ -1,0 +1,16 @@
+{
+  "name": "web.ts",
+  "version": "1.0.0",
+  "description": "a pretty bad web server, tbh",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "watch": "tsc -w",
+    "build": "tsc"
+  },
+  "author": "@fluffywaffles",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "typescript": "^4.6.3"
+  }
+}
