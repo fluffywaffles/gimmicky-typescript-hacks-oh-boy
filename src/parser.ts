@@ -111,6 +111,21 @@ type ParserConfiguration<
   },
 > = (Configuration)
 
+type ParametersForParser<
+  Pair extends [ keyof Configuration['Types'], keyof Configuration['Types'] ],
+  Configuration extends ParserConfiguration,
+  A extends Pair[0] = Pair[0],
+  B extends Pair[1] = Pair[1],
+> = (
+  A extends keyof Configuration['ParserParameters']
+    ? B extends keyof Configuration['ParserParameters'][A]
+      ? Configuration['ParserParameters'][A][B] extends any[]
+        ? Configuration['ParserParameters'][A][B]
+        : []
+      : []
+    : []
+)
+
 /*
  * s'up
  */
@@ -121,20 +136,11 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
       // and for all parseable types B...
       [B in keyof Configuration['Types']]: (
         // must provide a function from A -> B
-        // if we specified ParserParameters for that parse function...
-        A extends keyof Configuration['ParserParameters']
-          ? B extends keyof Configuration['ParserParameters'][A]
-            // then expect optional additional parameters accordingly
-            // (for some reason the compiler makes us write this?)
-            ? Configuration['ParserParameters'][A][B] extends any[]
-              ? (
-                  value  : Configuration['Types'][A],
-                  ...rest: Configuration['ParserParameters'][A][B]
-                ) => (Configuration['Types'][B])
-          // otherwise, it's just a simple fn A -> B
-          : (value: Configuration['Types'][A]) => (Configuration['Types'][B])
-          : (value: Configuration['Types'][A]) => (Configuration['Types'][B])
-          : (value: Configuration['Types'][A]) => (Configuration['Types'][B])
+        (
+          value  : Configuration['Types'][A],
+          // which may have additional parameters if configured
+          ...rest: (ParametersForParser<[ A, B ], Configuration>)
+        ) => (Configuration['Types'][B])
       )
     }
   }
@@ -156,13 +162,7 @@ function makeParser<Configuration extends ParserConfiguration>(
   >(
     value           : Configuration['Types'][SourceRepr]|undefined,
     desiredTypeRepr : DesiredRepr,
-    ...restParams   : (
-      Parameters<ExhaustiveParserCases<Configuration>[SourceRepr][DesiredRepr]> extends (
-        [ Configuration['Types'][SourceRepr], ... infer RestParams ]
-      )
-        ? Partial<RestParams> // all rest params are optional
-        : []
-    )
+    ...restParams   : ParametersForParser<[ SourceRepr, DesiredRepr ], Configuration>
   ): (
     Fallible.Outcome<{
       Success: Configuration['Types'][DesiredRepr],
@@ -173,31 +173,16 @@ function makeParser<Configuration extends ParserConfiguration>(
       return Fallible.Outcome.Of.Failure(null)
     }
     /* We know that value is of SourceType and we know that typeof value
-     * is SourceRepr, we just have to tell the compiler. In
-     * other words: this is a safe, checked cast.
+     * is SourceRepr, we just have to tell the compiler. In other words:
+     * this is a safe, checked cast.
      */
-    const sourceTypeRepr = getRepresentation(value)
+    const sourceTypeRepr = getRepresentation(value) as SourceRepr
     /*
-     * If value is defined and it's already our desired type, return it
+     * Succeed with the parsed result
      */
-    if (
-      true
-      && (sourceTypeRepr in cases)
-      && (desiredTypeRepr in cases[sourceTypeRepr])
-    ) {
-      /*
-       * Succeed with the parsed result
-       *   NOTE we have to BANG this out since `in` checks are apparently
-       *   not smart enough to narrow the type for us in this `if`
-       */
-      const parser = cases[sourceTypeRepr][desiredTypeRepr]!
-      return Fallible.Outcome.Of.Success(parser(value, ...restParams))
-    } else {
-      /*
-       * Otherwise, fail with null
-       */
-      return Fallible.Outcome.Of.Failure(null)
-    }
+    const parser = cases[sourceTypeRepr][desiredTypeRepr]
+    const result = parser(value, ...restParams)
+    return Fallible.Outcome.Of.Success(result)
   }
 }
 
