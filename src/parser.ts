@@ -69,12 +69,12 @@ type TypeRepresentationToTypeMap<
 > = (TypesForRepresentations)
 
 // optional additional parse function parameters on a per-case basis
-type TypeRepresentationToParserParametersMap<
+type TypeRepresentationPairToParserParametersMap<
   // map any pair of representations to optional extra parameters
-  ParserParametersForRepresentations
+  ParserParametersForRepresentationPairs
     extends { [A in Key]?: { [B in Key]?: any[] } }
           = { [A in Key]?: { [B in Key]?: any[] } },
-> = (ParserParametersForRepresentations)
+> = (ParserParametersForRepresentationPairs)
 
 /*
  * Double-duty type constructor and base constraint for configuring a set
@@ -104,10 +104,10 @@ type TypeRepresentationToParserParametersMap<
 type ParserConfiguration<
   Configuration extends {
     Types             : TypeRepresentationToTypeMap,
-    ParserParameters? : TypeRepresentationToParserParametersMap,
+    ParserParameters? : TypeRepresentationPairToParserParametersMap,
   } = {
     Types             : TypeRepresentationToTypeMap<Key>,
-    ParserParameters? : TypeRepresentationToParserParametersMap<{}>,
+    ParserParameters? : TypeRepresentationPairToParserParametersMap<{}>,
   },
 > = (Configuration)
 
