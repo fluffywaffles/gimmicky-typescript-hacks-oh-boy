@@ -1,55 +1,5 @@
 import * as Fallible from './fallible'
 
-// generic-unused-types {{{
-// shhhhhhhh
-type DeepPartial<
-  Type,
-  Options extends { Depth: 1|2|3|4|5|6|7|8|9 } = { Depth: 1 },
-> = (
-  Type extends object ? (
-      Options['Depth'] extends 9 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 8 }> } // stop
-    : Options['Depth'] extends 8 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 7 }> } // looking
-    : Options['Depth'] extends 7 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 6 }> } // so
-    : Options['Depth'] extends 6 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 5 }> } // closely
-    : Options['Depth'] extends 5 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 4 }> } // you
-    : Options['Depth'] extends 4 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 3 }> } // should
-    : Options['Depth'] extends 3 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 2 }> } // see
-    : Options['Depth'] extends 2 ? { [k in keyof Type]?: DeepPartial<Type[k], { Depth: 1 }> } // C#
-    : Options['Depth'] extends 1 ? { [k in keyof Type]?: Type[k] }
-    : never
-  ) : Type
-)
-
-// get the type of a path in a target type
-type Get<
-  Path extends Key[],
-  Target,
-  Options extends { Default: any, Debug: boolean } = { Default: never, Debug: false },
-> = (
-  // if the next key in path is a key of our target...
-  Path extends [ keyof Target, ...infer Remainder ]
-    // ... and our Remainder is not empty...
-    ? Remainder extends Key[]
-      // ... then go deeper
-      ? Get< Remainder , Target[Path[0]], Options>
-      // ... otherwise, just get the next key in our target
-      : Target[Path[0]]
-    // ... but if our next key was not present
-    : Options['Debug'] extends false
-      // ... and we did not turn on debugging, return the Default type
-      ? Options['Default']
-      // ... but if we did turn on debugging, dump some context
-      : ({
-          Error : 'next key of path is not present',
-          Target: Target,
-          Path  : Path,
-        })
-)
-
-// get the values for all keys of an object
-type Values<Target> = Target[keyof Target]
-// }}}
-
 /*
  * incorrigible cleverness lies hidden here
  * avert your eyes
@@ -152,7 +102,7 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
 function makeParser<Configuration extends ParserConfiguration>(
   { cases, getRepresentation }: {
     cases             : ExhaustiveParserCases<Configuration>,
-    getRepresentation : (value : Values<Configuration['Types']>) => keyof Configuration['Types'],
+    getRepresentation : (value : Configuration['Types'][keyof Configuration['Types']]) => keyof Configuration['Types'],
   },
 ) {
   return function parse<
