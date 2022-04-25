@@ -57,14 +57,62 @@ namespace Outcome {
      * Outcome.Extract.Success<O extends Outcome<S     >> -> S
      */
     export type Success<Outcome extends Outcome.Generic> = (
-      Extract<Outcome, [ true, any ]>[1]
+      Outcome.Case.Success<Outcome>[1]
     )
     /*
      * Outcome.Extract.Failure<O extends Outcome<any, F>> -> F
      */
     export type Failure<Outcome extends Outcome.Generic> = (
-      Extract<Outcome, [ false, any ]>[1]
+      Outcome.Case.Failure<Outcome>[1]
     )
+  }
+  /*
+   * Outcome.Case selects individual cases out of an Outcome, namely the
+   * wrapped up Success and Failure cases.
+   */
+  export namespace Case {
+    /*
+     * Outcome.Case.Success<O extends Outcome<S, F>> -> Outcome.Of.Success<S>
+     */
+    export type Success<Outcome extends Outcome.Generic> = (
+      Extract<Outcome, [ true, any ]>
+    )
+    /*
+     * Outcome.Case.Failure<O extends Outcome<S, F>> -> Outcome.Of.Failure<F>
+     */
+    export type Failure<Outcome extends Outcome.Generic> = (
+      Extract<Outcome, [ false, any ]>
+    )
+  }
+  /*
+   * Type guards narrow an outcome to success or failure within if-blocks.
+   */
+  /*
+   * isSuccess(outcome) narrows an outcome to its success case.
+   *
+   * for example:
+   *   if (isSuccess(outcome)) { // outcome is Outcome.Of<S, F>
+   *     outcome // outcome is Outcome.Of.Success<S>
+   *   } else {
+   *     outcome // outcome is Outcome.Of.Failure<F>
+   *   }
+   */
+  export function isSuccess<Outcome extends Outcome.Generic>
+    (outcome: Outcome)
+    : outcome is Outcome.Case.Success<Outcome>
+  {
+    return outcome[0] === true
+  }
+  /*
+   * isFailure(outcome) narrows an outcome to its failure case.
+   * (Dual of isSuccess(outcome))
+   *
+   */
+  export function isFailure<Outcome extends Outcome.Generic>
+    (outcome: Outcome)
+    : outcome is Outcome.Case.Failure<Outcome>
+  {
+    return !isSuccess(outcome)
   }
   /*
    * 'Just' types
