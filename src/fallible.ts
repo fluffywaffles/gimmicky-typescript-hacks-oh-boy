@@ -49,7 +49,7 @@ namespace Outcome {
   }
   /*
    * Outcome.Extract types extract interesting component types from an
-   * Outcome, such as the wrapped Success and Failure types from the
+   * Outcome, such as the unwrapped Success and Failure types from the
    * different outcome cases.
    */
   export namespace Extract {
