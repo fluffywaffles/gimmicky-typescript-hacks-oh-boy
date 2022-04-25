@@ -122,7 +122,7 @@ function makeParser<Configuration extends ParserConfiguration>(
   ): (
     Fallible.Outcome<{
       Success: Configuration['Types'][DesiredRepr],
-      Failure: null,
+      Failure: any,
     }>
   ) {
     if (!value) {
