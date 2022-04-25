@@ -41,6 +41,12 @@ const parseEnv = Parser.make<EnvParser>({
   },
 })
 
-console.log(parseEnv('1234', 'number', { precision: 'float' }))
+const parsed = parseEnv('xyz', 'number', { precision: 'float' })
+console.log(parsed)
+if (Fallible.Outcome.isSuccess(parsed)) {
+  parsed
+} else {
+  parsed
+}
 
 export default parseEnv
