@@ -66,10 +66,61 @@ namespace Outcome {
       Extract<Outcome, [ false, any ]>[1]
     )
   }
-  export type OrJust<Success = any, Failure = any> = (
-    | Success
-    | Outcome.Of<Success, Failure>
+  /*
+   * 'Just' types
+   */
+  export type OrJust<Success, Failure = any> = (
+    OrJust.Generic<Success, Failure>
   )
+  export namespace OrJust {
+    export type Generic<Success = any, Failure = any> = (
+      | Success
+      | Outcome.Of<Success, Failure>
+    )
+    // helpers
+    export namespace Extract {
+      export type Outcome<Just extends OrJust.Generic> = (
+        Extract<Just, Outcome.Generic>
+      )
+      export type Failure<Just extends OrJust.Generic> = (
+        Outcome.Extract.Failure<OrJust.Extract.Outcome<Just>>
+      )
+      export type Success<Just extends OrJust.Generic> = (
+        Outcome.Extract.Success<OrJust.Extract.Outcome<Just>>
+      )
+    }
+    // type transformer, no-op
+    export function Of<Just extends OrJust.Generic>(value: Just): Just {
+      return value
+    }
+    // determine whether an OrJust is an Outcome and not 'just' a Success
+    export function isOutcome<Just extends OrJust.Generic>(value: Just)
+      : value is OrJust.Extract.Outcome<Just>
+    {
+      return (true
+        && value instanceof Array
+        && value.length === 2
+        && (typeof value[0]) === 'boolean'
+      )
+    }
+    // determine whether an OrJust is 'just' a Success
+    export function isJust<Outcome extends Outcome.Generic>(value: Outcome): value is never
+    export function isJust<Success>(value: OrJust<Success>): value is Success
+    export function isJust(value: OrJust.Generic) {
+      return !isOutcome(value)
+    }
+    // given an Outcome.OrJust, wrap just a success in an Outcome
+    export function EnsureWrapped<Success, Failure>
+      (value: OrJust<Success, Failure>)
+      : Outcome.Of<Success, Failure>
+    {
+      if (OrJust.isOutcome(value)) {
+        return value
+      } else {
+        return Outcome.Of.Success(value)
+      }
+    }
+  }
   /*
    * Outcome.must(outcome)
    * unwraps Success value or throws if failed

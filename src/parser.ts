@@ -90,7 +90,7 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
           value  : Configuration['Types'][A],
           // which may have additional parameters if configured
           ...rest: (ParametersForParser<[ A, B ], Configuration>)
-        ) => (Configuration['Types'][B])
+        ) => (Fallible.Outcome.OrJust<Configuration['Types'][B]>)
       )
     }
   }
@@ -132,7 +132,7 @@ function makeParser<Configuration extends ParserConfiguration>(
      */
     const parser = cases[sourceTypeRepr][desiredTypeRepr]
     const result = parser(value, ...restParams)
-    return Fallible.Outcome.Of.Success(result)
+    return Fallible.Outcome.OrJust.EnsureWrapped(result)
   }
 }
 

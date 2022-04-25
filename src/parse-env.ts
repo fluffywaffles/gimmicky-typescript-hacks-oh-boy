@@ -1,4 +1,5 @@
 import * as Parser from './parser'
+import * as Fallible from './fallible'
 
 // now let's make sure we get those environment variables parsed
 type EnvParser = Parser.Configuration<{
@@ -24,10 +25,17 @@ const parseEnv = Parser.make<EnvParser>({
     string: {
       string: v => v,
       number: (v, { precision } = { precision: 'int' }) => {
-        switch (precision) {
-          case   'int': return parseInt(v)
-          case 'float': return parseFloat(v)
-        }
+        const result = (() => {
+          switch (precision) {
+            case   'int': return parseInt(v)
+            case 'float': return parseFloat(v)
+          }
+        })()
+        return Fallible.Outcome.Of[
+          Number.isNaN(result)
+            ? 'Failure'
+            : 'Success'
+        ](result)
       },
     },
   },
