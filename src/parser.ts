@@ -90,7 +90,10 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
           value  : Configuration['Types'][A],
           // which may have additional parameters if configured
           ...rest: (ParametersForParser<[ A, B ], Configuration>)
-        ) => (Fallible.Outcome.OrJust<Configuration['Types'][B]>)
+        ) => (
+          // and which may return a Fallible.Outcome.Of<B> or Just B
+          Fallible.Outcome.OrJust<Configuration['Types'][B]>
+        )
       )
     }
   }
@@ -99,10 +102,13 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
 /*
  * this is just here for the shock value
  */
+type Values<Target> = Target[keyof Target]
 function makeParser<Configuration extends ParserConfiguration>(
   { cases, getRepresentation }: {
     cases             : ExhaustiveParserCases<Configuration>,
-    getRepresentation : (value : Configuration['Types'][keyof Configuration['Types']]) => keyof Configuration['Types'],
+    getRepresentation : (value : Values<Configuration['Types']>) => (
+      keyof Configuration['Types']
+    ),
   },
 ) {
   return function parse<
