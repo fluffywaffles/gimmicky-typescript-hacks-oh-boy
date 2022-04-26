@@ -61,6 +61,10 @@ type ParserConfiguration<
   },
 > = (Configuration)
 
+/*
+ * Convenience type for extracting the parameters for a parser from
+ * a ParserConfiguration.
+ */
 type ParametersForParser<
   Pair extends [ keyof Configuration['Types'], keyof Configuration['Types'] ],
   Configuration extends ParserConfiguration,
@@ -71,13 +75,13 @@ type ParametersForParser<
     ? B extends keyof Configuration['ParserParameters'][A]
       ? Configuration['ParserParameters'][A][B] extends any[]
         ? Configuration['ParserParameters'][A][B]
-        : []
-      : []
-    : []
+        : [] // yeah i know
+      : [] // this is tedous
+    : [] // but this is the price of excellence
 )
 
 /*
- * s'up
+ * Generates an exhaustive set of parsers for a ParserConfiguration.
  */
 type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
   {
@@ -91,7 +95,7 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
           // which may have additional parameters if configured
           ...rest: (ParametersForParser<[ A, B ], Configuration>)
         ) => (
-          // and which may return a Fallible.Outcome.Of<B> or Just B
+          // and which may return a Fallible.Outcome.Of<B> or just B
           Fallible.Outcome.OrJust<Configuration['Types'][B]>
         )
       )
@@ -99,10 +103,12 @@ type ExhaustiveParserCases<Configuration extends ParserConfiguration> = (
   }
 )
 
+// extract all the values from an index type
+type Values<Target> = Target[keyof Target]
+
 /*
  * this is just here for the shock value
  */
-type Values<Target> = Target[keyof Target]
 function makeParser<Configuration extends ParserConfiguration>(
   { cases, getRepresentation }: {
     cases             : ExhaustiveParserCases<Configuration>,
@@ -170,7 +176,6 @@ export type {
   RuntimeTypeOf,
   RuntimeTypeOfToTypeMap,
   // generic parser configuration types
-  ExhaustiveParserCases,
   TypeRepresentationToTypeMap,
   ParserConfiguration as Configuration,
 }
