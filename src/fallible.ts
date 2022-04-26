@@ -1,4 +1,9 @@
 /*
+ * A Fallible is a computation that may fail.
+ * A Fallible.Outcome represents the success or failure of a computation.
+ *
+ * Outcome is similar to Result<T, E> from Rust.
+ *
  * type MyOutcome = Outcome<{
  *   Success: MySuccessResult,
  *   Failure: MyFailureResult,
@@ -115,7 +120,19 @@ namespace Outcome {
     return !isSuccess(outcome)
   }
   /*
-   * 'Just' types
+   * An Outcome.OrJust<T> is either "just" T or an Outcome.Of<T, any>.
+   *
+   * An OrJust can also also optionally express the failure type of the
+   * outcome:
+   *
+   * Outcome.OrJust<T, F> is either "just" T or an Outcome.Of<T, F>.
+   *
+   * Using OrJust as a return type allows us to write functions that
+   * cannot fail as Fallibles without them needing to wrap their results
+   * in a Fallible.Outcome. It also allows those functions to be gradually
+   * refactored to express their failures with Fallible.Outcomes in the
+   * future, because in reality functions that "cannot fail" eventually
+   * realize that they do fail.
    */
   export type OrJust<Success, Failure = any> = (
     OrJust.Generic<Success, Failure>
@@ -125,23 +142,42 @@ namespace Outcome {
       | Success
       | Outcome.Of<Success, Failure>
     )
-    // helpers
+    /*
+     * OrJust.Extract types extract interesting component types from an
+     * OrJust, such as the Outcome type and its component unwrapped
+     * Success and Failure types.
+     */
     export namespace Extract {
+      /*
+       * OrJust.Extract.Outcome<OrJust<S, F>> -> Outcome.Of<S, F>
+       */
       export type Outcome<Just extends OrJust.Generic> = (
         Extract<Just, Outcome.Generic>
       )
+      /*
+       * OrJust.Extract.Failure<OrJust<S, F>> -> F
+       */
       export type Failure<Just extends OrJust.Generic> = (
         Outcome.Extract.Failure<OrJust.Extract.Outcome<Just>>
       )
+      /*
+       * OrJust.Extract.Success<OrJust<S, F>> -> S
+       */
       export type Success<Just extends OrJust.Generic> = (
         Outcome.Extract.Success<OrJust.Extract.Outcome<Just>>
       )
     }
-    // type transformer, no-op
-    export function Of<Just extends OrJust.Generic>(value: Just): Just {
-      return value
-    }
-    // determine whether an OrJust is an Outcome and not 'just' a Success
+    /*
+     * Type guards narrow an OrJust<Success, Failure> to an
+     * Outcome<Success, Failure> or just a Success within if-blocks.
+     */
+    /*
+     * isOutcome(orJust) determines whether an OrJust is an Outcome and
+     * not 'just' a success.
+     *
+     * isOutcome<OrJust<Success, Failure>>(orJust) narrows an OrJust to
+     * its Outcome<Success, Failure> case when it is not 'just' a Success.
+     */
     export function isOutcome<Just extends OrJust.Generic>(value: Just)
       : value is OrJust.Extract.Outcome<Just>
     {
@@ -151,13 +187,21 @@ namespace Outcome {
         && (typeof value[0]) === 'boolean'
       )
     }
-    // determine whether an OrJust is 'just' a Success
+    /*
+     * isJust(just) determine whether an OrJust is 'just' a Success.
+     *
+     * isJust<OrJust<Success, Failure>>(just) narrows an OrJust to its
+     * 'just' Success case when it is not an Outcome<Success, Failure>.
+     */
     export function isJust<Outcome extends Outcome.Generic>(value: Outcome): value is never
     export function isJust<Success>(value: OrJust<Success>): value is Success
     export function isJust(value: OrJust.Generic) {
       return !isOutcome(value)
     }
-    // given an Outcome.OrJust, wrap just a success in an Outcome
+    /*
+     * EnsureWrapped makes sure an OrJust of 'just' a Success is wrapped
+     * in an Outcome.Of<Success>.
+     */
     export function EnsureWrapped<Success, Failure>
       (value: OrJust<Success, Failure>)
       : Outcome.Of<Success, Failure>
