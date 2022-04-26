@@ -27,7 +27,7 @@ Status
 --------------------------------------------------------------------------
 The primary components of Prettybad/Web are: Parsers, Handlers, Routers,
 and Errors. Secondary components include various utility types, and the
-Fallible library for representing computations that may not succeed.
+Fallible library for representing computations that may fail.
 
 As of 2022-04-25, the Fallible library is in-progress at the same time as
 foundational work for Parsers. The remaining components have not yet been
