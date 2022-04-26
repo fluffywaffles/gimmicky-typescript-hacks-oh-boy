@@ -9,7 +9,7 @@ What if a web server really tried to push the TypeScript compiler?
 
 What if you literally could not serve a request...
 * Unless you type it and write a strongly-typed parser for it? And,
-* Unless that request parses successfully? And,
+* Unless that request parses successfully?
 
 What if a request is assumed to fail...
 * Until you write exhaustive handlers for all of its failure cases?
