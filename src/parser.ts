@@ -28,28 +28,30 @@ type TypeRepresentationPairToParserParametersMap<
 
 /*
  * Double-duty type constructor and base constraint for configuring a set
- * of type representations and a mapping from representation to type.
+ * of type representations as a mapping from representation to type, and
+ * optionally parameters for parsers between types.
  *
  * type  MyCustomType = {...}
  * const MyCustomTypeSymbol = Symbol.for('my custom type')
  * class MyClass {}
  * ParserConfiguration<{
- *   TypeRepresentation: (
- *     | 'string'
- *     | 'number'
- *     | 'MyClass'
- *     | (typeof MyCustomTypeSymbol)
- *   ),
- *   RepresentationToTypeMap: {
+ *   Types: {
  *     'string': string,
  *     'number': number,
  *     'MyClass': MyClass,
  *     [MyCustomTypeSymbol]: MyCustomType,
  *   },
+ *   ParserParameters: {
+ *     string: {
+ *       number: [{ precision: 'int'|'float' }],
+ *     },
+ *     string: {
+ *       // deserialize an instance of MyClass from a string
+ *       MyClass: [Various, Constructor, Parameters],
+ *     },
+ *   },
  * }>
  *
- * constrains RepresentationToTypeMap so that it must provide a type for
- * every case in TypeRepresentation, then returns both input types.
  */
 type ParserConfiguration<
   Configuration extends {
