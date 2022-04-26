@@ -10,11 +10,11 @@ What if a web server really tried to push the TypeScript compiler?
 What if you literally could not serve a request...
 * Unless you type it and write a strongly-typed parser for it? And,
 * Unless that request parses successfully? And,
-* Unless a request that fails to parse tells the user why?
 
 What if a request is assumed to fail...
 * Until you write exhaustive handlers for all of its failure cases?
 * And the compiler tells you if your code can handle it?
+* And when it fails it tells the user why?
 
 What kinds of wacky libraries of types and functions would you need to
 make that happen? And more importantly: at what cost?
