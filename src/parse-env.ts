@@ -31,11 +31,11 @@ const parseEnv = Parser.make<EnvParser>({
             case 'float': return parseFloat(v)
           }
         })()
-        return Fallible.Outcome.Of[
-          Number.isNaN(result)
-            ? 'Failure'
-            : 'Success'
-        ](result)
+        if (Number.isNaN(result)) {
+          return Fallible.Outcome.Of.Failure(result)
+        } else {
+          return Fallible.Outcome.Of.Success(result)
+        }
       },
     },
   },
